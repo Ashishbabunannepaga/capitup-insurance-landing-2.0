@@ -43,9 +43,7 @@ FORMS = {
 
 # Optional: place the actual CapitUp logo at assets/logo.png
 LOGO_CANDIDATES = [
-    Path(__file__).parent / "assets" / "capitup_logo_transparent.png",
-    Path(__file__).parent / "assets" / "capitup_logo.png",
-    Path(__file__).parent / "assets" / "logo.png",
+    Path(__file__).parent / "logo.png",
 ]
 
 
