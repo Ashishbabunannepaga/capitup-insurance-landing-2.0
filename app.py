@@ -2,50 +2,77 @@ import streamlit as st
 from pathlib import Path
 import base64
 import html
+import urllib.parse
 
 # ============================================================
-# CapitUp Insurance Camp Landing Page
+# Page Configuration & Viewport Optimization
 # ============================================================
-
 st.set_page_config(
-    page_title="CapitUp | Insurance Made Simple",
+    page_title="CapitUp | Insurance Portal",
     page_icon="🛡️",
-    layout="wide",
+    layout="centered",
     initial_sidebar_state="collapsed",
 )
 
+# Optional QR / Source tracking logic
+try:
+    source_param = str(st.query_params.get("source", "")).strip()[:100]
+except Exception:
+    source_param = ""
+
+def build_url(base_url: str, src: str) -> str:
+    if not src:
+        return base_url
+    delimiter = "&" if "?" in base_url else "?"
+    return f"{base_url}{delimiter}source={urllib.parse.quote(src)}"
+
+# Put your official WhatsApp number here (digits only, e.g. 919876543210)
+WHATSAPP_NUMBER = "919876543210" 
+wa_msg = urllib.parse.quote(f"Hi CapitUp Team! I'm attending the Insurance Camp ({source_param or 'Online'}) and need quick guidance on insurance.")
+WHATSAPP_URL = f"https://wa.me/{WHATSAPP_NUMBER}?text={wa_msg}"
+
 FORMS = {
     "health": {
-        "title": "Health Insurance",
+        "title": "Health & Medical Shield",
+        "category": "health",
         "icon": "🏥",
-        "tagline": "Protect your health & your family",
-        "description": "Explore health insurance options for yourself and your loved ones.",
-        "url": "https://tally.so/r/KYbbbD",
-        "button": "Get Health Assistance",
+        "tagline": "Family & Individual Comprehensive Cover",
+        "description": "10,000+ cashless hospitals, 0% co-pay, pre-existing disease coverage & maternity benefits.",
+        "badges": ["✨ Cashless in 30 Mins", "💰 Tax Saver 80D", "👨‍👩‍👧 Family Floater"],
+        "accent": "emerald",
+        "url": build_url("https://tally.so/r/KYbbbD", source_param),
+        "cta": "Get Health Quote",
     },
     "term": {
-        "title": "Term Life Insurance",
+        "title": "Term Life Protection",
+        "category": "term",
         "icon": "🛡️",
-        "tagline": "Protect your family's financial future",
-        "description": "Find life cover that can help protect the people who matter most.",
-        "url": "https://tally.so/r/A7Z1GD",
-        "button": "Explore Term Insurance",
+        "tagline": "Guaranteed Financial Security for Family",
+        "description": "High sum assured (₹1 Cr - ₹5 Cr+) with critical illness rider & accidental disability waivers.",
+        "badges": ["💎 Up to ₹5 Cr Cover", "⚡ 99.2% Claim Settlement", "🛡️ Critical Illness Add-on"],
+        "accent": "amber",
+        "url": build_url("https://tally.so/r/A7Z1GD", source_param),
+        "cta": "Explore Term Plans",
     },
     "motor": {
-        "title": "Motor Insurance",
-        "icon": "🚗",
-        "tagline": "Protect your vehicle & your journey",
-        "description": "Get assistance with new insurance, renewals and motor insurance needs.",
-        "url": "https://tally.so/r/PdKVJb",
-        "button": "Get Motor Assistance",
+        "title": "Motor & EV Insurance",
+        "category": "motor",
+        "icon": "⚡",
+        "tagline": "Cars, Two-Wheelers & Commercial Fleets",
+        "description": "Zero depreciation, instant digital copy issue, roadside breakdown assistance & quick claim inspections.",
+        "badges": ["🚗 0% Depreciation", "⏱️ 1-Minute Renewal", "🛠️ 24/7 Roadside Assist"],
+        "accent": "cyan",
+        "url": build_url("https://tally.so/r/PdKVJb", source_param),
+        "cta": "Renew or Buy Cover",
     },
 }
 
-# Optional: place the actual CapitUp logo at assets/logo.png
+# Optional Logo Loader
 LOGO_CANDIDATES = [
-    Path(__file__).parent / "logo.png",
+    Path(__file__).parent / "assets" / "capitup_logo_transparent.png",
+    Path(__file__).parent / "assets" / "capitup_logo.png",
+    Path(__file__).parent / "assets" / "logo.png",
 ]
-
 
 def get_logo_data_uri(path: Path):
     if not path.exists():
@@ -63,348 +90,670 @@ def get_logo_data_uri(path: Path):
     except Exception:
         return None
 
-
 logo_uri = None
-for _logo_path in LOGO_CANDIDATES:
-    if _logo_path.exists():
-        logo_uri = get_logo_data_uri(_logo_path)
+for _p in LOGO_CANDIDATES:
+    if _p.exists():
+        logo_uri = get_logo_data_uri(_p)
         if logo_uri:
             break
 
-# Optional QR/source tracking:
-try:
-    source = str(st.query_params.get("source", "")).strip()[:100]
-except Exception:
-    source = ""
-
+# ============================================================
+# Mobile-First Next-Gen Styling & Micro-Interactions
+# ============================================================
 st.markdown(
     """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
+/* Reset and Viewport Lock */
 html, body, [class*="css"] {
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                 Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
-.stApp {
-    background:
-        radial-gradient(circle at 10% 0%, rgba(244,196,48,.10), transparent 30%),
-        radial-gradient(circle at 90% 10%, rgba(0,172,193,.08), transparent 28%),
-        #f7f8fa;
-}
-.block-container {
-    max-width: 1180px;
-    padding-top: 1.2rem;
-    padding-bottom: 2.5rem;
-}
-#MainMenu, footer, header { visibility: hidden; }
 
-.hero {
+#MainMenu, footer, header, [data-testid="stToolbar"] {
+    display: none !important;
+}
+
+.stApp {
+    background: #060911;
+    color: #F8FAFC;
+    overflow-x: hidden;
+}
+
+.block-container {
+    max-width: 500px !important; /* Perfect mobile iPhone/Pixel viewport ratio */
+    padding: 0.6rem 0.9rem 6rem 0.9rem !important;
+}
+
+/* Ambient Animated Radial Light Orbs */
+.orb-glow {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 100vh;
+    max-width: 520px;
+    pointer-events: none;
+    z-index: 0;
+}
+.orb-1 {
+    position: absolute;
+    top: -5%;
+    right: -10%;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(245, 197, 66, 0.16) 0%, transparent 70%);
+    filter: blur(40px);
+    animation: orbFloat 7s ease-in-out infinite alternate;
+}
+.orb-2 {
+    position: absolute;
+    top: 30%;
+    left: -15%;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.14) 0%, transparent 70%);
+    filter: blur(45px);
+    animation: orbFloat 9s ease-in-out infinite alternate-reverse;
+}
+@keyframes orbFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(25px, 35px) scale(1.15); }
+}
+
+/* App Bar & Brand Header */
+.app-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 4px 16px;
+}
+.brand-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 5px 12px;
+    border-radius: 99px;
+}
+.brand-symbol {
+    font-size: 14px;
+}
+.brand-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: #F8FAFC;
+    letter-spacing: 0.5px;
+}
+.live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #34D399;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10B981;
+    animation: livePulse 1.6s infinite;
+}
+@keyframes livePulse {
+    0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Glass Hero Card with Shimmer Border */
+.hero-glass {
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(175deg, rgba(26, 34, 54, 0.75) 0%, rgba(12, 17, 29, 0.92) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 26px;
+    padding: 24px 20px 20px;
+    text-align: center;
+    box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.7);
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+.hero-glass::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245, 197, 66, 0.6), transparent);
+}
+.hero-logo-img {
+    max-width: 190px;
+    height: auto;
+    max-height: 60px;
+    object-fit: contain;
+    margin: 0 auto 12px;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+}
+.hero-title {
+    font-size: clamp(24px, 6.2vw, 30px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.6px;
+    margin: 0 0 8px;
+    background: linear-gradient(180deg, #FFFFFF 40%, #CBD5E1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hero-desc {
+    font-size: 13px;
+    color: #94A3B8;
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 95%;
+}
+
+/* Live Activity Ticker */
+.activity-ticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6px 12px;
+    border-radius: 99px;
+    font-size: 11px;
+    color: #E2E8F0;
+    font-weight: 600;
+    margin-top: 14px;
+}
+
+/* Category Filter Tabs (Zero-Reload Pure CSS Interactive Switching) */
+.filter-tabs {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 4px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+    gap: 4px;
+}
+.filter-tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 6px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.filter-tab:hover {
+    color: #FFF;
+    background: rgba(255, 255, 255, 0.06);
+}
+.filter-tab.active {
+    background: linear-gradient(135deg, #F5C542, #E5B229);
+    color: #0B0F19;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(245, 197, 66, 0.35);
+}
+
+/* Action Cards */
+.cards-deck {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.super-card {
+    display: block;
+    text-decoration: none !important;
+    background: linear-gradient(145deg, rgba(22, 29, 46, 0.9) 0%, rgba(13, 18, 30, 0.96) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 19px 17px;
     position: relative;
     overflow: hidden;
-    border-radius: 28px;
-    padding: 42px 34px 40px;
-    margin-bottom: 28px;
-    background: linear-gradient(135deg, #111827 0%, #182334 54%, #101827 100%);
-    box-shadow: 0 22px 55px rgba(15,23,42,.16);
-    text-align: center;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease, box-shadow 0.22s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.6);
 }
-.hero::before {
-    content: "";
-    position: absolute;
-    width: 330px; height: 330px;
-    right: -110px; top: -170px;
-    border-radius: 50%;
-    background: rgba(245,197,66,.12);
+.super-card:hover {
+    border-color: rgba(245, 197, 66, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 18px 34px -8px rgba(245, 197, 66, 0.12);
 }
-.hero::after {
-    content: "";
-    position: absolute;
-    width: 240px; height: 240px;
-    left: -130px; bottom: -150px;
-    border-radius: 50%;
-    background: rgba(0,188,212,.10);
+.super-card:active {
+    transform: scale(0.965);
+    border-color: rgba(245, 197, 66, 0.6);
 }
-.brand {
-    position: relative; z-index: 1;
-    display: inline-flex; align-items: center; justify-content: center;
-    gap: 12px; margin-bottom: 20px;
+
+/* Card Header */
+.card-header-flex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
 }
-.brand-mark {
-    width: 50px; height: 50px;
-    border: 2px solid rgba(245,197,66,.75);
-    border-radius: 15px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,.05);
-    font-size: 25px;
+.icon-box-3d {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    position: relative;
 }
-.brand-text {
-    color: #f5c542; font-size: 19px; font-weight: 800;
-    letter-spacing: .9px;
+.icon-emerald {
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.08) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
 }
-.hero-logo {
-    position: relative; z-index: 1;
-    width: min(285px, 78vw);
-    height: auto;
-    max-height: 105px;
-    object-fit: contain;
-    object-position: center;
-    margin: 0 auto 19px;
-    display: block;
+.icon-amber {
+    background: radial-gradient(circle, rgba(245, 197, 66, 0.25) 0%, rgba(245, 197, 66, 0.08) 100%);
+    border: 1px solid rgba(245, 197, 66, 0.35);
+    box-shadow: 0 0 16px rgba(245, 197, 66, 0.2);
 }
-.hero h1 {
-    position: relative; z-index: 1;
-    color: #fff; font-size: clamp(30px,4vw,48px);
-    line-height: 1.08; margin: 0; font-weight: 800;
-    letter-spacing: -1.4px;
+.icon-cyan {
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, rgba(6, 182, 212, 0.08) 100%);
+    border: 1px solid rgba(6, 182, 212, 0.35);
+    box-shadow: 0 0 16px rgba(6, 182, 212, 0.2);
 }
-.strategic-tagline {
-    position: relative; z-index: 1;
-    max-width: 780px;
-    margin: 10px auto 0;
-    color: #f5c542;
-    font-size: clamp(11px, 1.7vw, 14px);
-    line-height: 1.5;
+
+.card-title-group {
+    flex: 1;
+}
+.card-headline {
+    font-size: 18px;
+    font-weight: 800;
+    color: #FFF;
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+.card-tagline {
+    font-size: 11.5px;
     font-weight: 700;
-    letter-spacing: .45px;
+    color: #F8D368;
+    margin-top: 2px;
 }
-.hero p {
-    position: relative; z-index: 1;
-    max-width: 680px; margin: 12px auto 0;
-    color: #cbd5e1; font-size: 16px; line-height: 1.65;
+
+.card-summary {
+    font-size: 12.5px;
+    color: #94A3B8;
+    line-height: 1.45;
+    margin: 0 0 12px;
 }
-.hero-pill {
-    position: relative; z-index: 1;
-    display: inline-block; margin-top: 22px;
-    padding: 8px 15px; border-radius: 999px;
-    color: #fef3c7; background: rgba(245,197,66,.11);
-    border: 1px solid rgba(245,197,66,.25);
-    font-size: 12px; font-weight: 700;
-    letter-spacing: .6px; text-transform: uppercase;
+
+/* Feature Check Badges */
+.card-badges-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 15px;
 }
-.section-heading { text-align: center; margin: 34px 0 18px; }
-.section-heading .eyebrow {
-    color: #9a6d00; font-size: 12px; font-weight: 800;
-    letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 7px;
+.micro-badge {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #CBD5E1;
 }
-.section-heading h2 {
-    color: #172033; font-size: clamp(24px,3vw,32px);
-    margin: 0; font-weight: 800; letter-spacing: -.6px;
+
+/* Interactive CTA Strip */
+.card-cta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 11px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
-.section-heading p {
-    color: #64748b; margin: 8px auto 0; max-width: 620px;
-    line-height: 1.55; font-size: 14px;
+.cta-label {
+    font-size: 13px;
+    font-weight: 800;
+    color: #F8FAFC;
+    letter-spacing: 0.2px;
 }
-.card {
-    min-height: 315px; padding: 27px 24px 22px;
-    border: 1px solid #e5e7eb; border-radius: 23px;
-    background: rgba(255,255,255,.96);
-    box-shadow: 0 12px 35px rgba(15,23,42,.07);
-    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-    margin-bottom: 9px;
+.action-arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 12px;
+    background: #F8D368;
+    color: #090D16;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 900;
+    transition: transform 0.18s ease;
 }
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 18px 42px rgba(15,23,42,.12);
-    border-color: #d8b24b;
+.super-card:hover .action-arrow {
+    transform: translateX(3px) scale(1.05);
+    background: #FFE57E;
 }
-.icon {
-    width: 58px; height: 58px; display: flex;
-    align-items: center; justify-content: center;
-    border-radius: 17px; background: #fff8df;
-    border: 1px solid #f1df9d; font-size: 29px; margin-bottom: 19px;
+
+/* Modern Accordion */
+.faq-box {
+    position: relative;
+    z-index: 2;
+    margin-top: 24px;
 }
-.card h3 {
-    color: #172033; font-size: 21px; line-height: 1.2;
-    margin: 0 0 7px; font-weight: 800;
+.faq-heading-badge {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
 }
-.tagline {
-    color: #9a6d00; font-size: 13px; font-weight: 700;
-    line-height: 1.4; margin-bottom: 11px;
+details {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    margin-bottom: 8px;
+    overflow: hidden;
 }
-.description {
-    color: #64748b; font-size: 13px; line-height: 1.6;
-    min-height: 63px; margin-bottom: 2px;
+summary {
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #E2E8F0;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
-div.stLinkButton > a {
-    width: 100%; justify-content: center;
-    border-radius: 12px !important; min-height: 46px;
-    font-weight: 700 !important; border: 0 !important;
-    background: #172033 !important; color: #fff !important;
-    transition: all .18s ease !important;
+summary::-webkit-details-marker { display: none; }
+summary::after {
+    content: "↓";
+    font-size: 14px;
+    color: #F8D368;
+    font-weight: 800;
+    transition: transform 0.2s ease;
 }
-div.stLinkButton > a:hover {
-    background: #9a6d00 !important; color: #fff !important;
-    transform: translateY(-1px);
+details[open] summary::after {
+    transform: rotate(180deg);
 }
-.steps {
-    display: flex; justify-content: center; gap: 10px;
-    margin: 25px auto 10px; max-width: 920px;
+details[open] {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(245, 197, 66, 0.2);
 }
-.step {
-    flex: 1; background: #fff; border: 1px solid #e8ebef;
-    border-radius: 16px; padding: 17px 12px; text-align: center;
-    box-shadow: 0 6px 20px rgba(15,23,42,.04);
+.faq-drawer {
+    padding: 0 14px 13px;
+    font-size: 12px;
+    color: #94A3B8;
+    line-height: 1.5;
 }
-.step-number {
-    width: 28px; height: 28px; margin: 0 auto 8px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; background: #fff3c4; color: #8a6100;
-    font-size: 12px; font-weight: 800;
+
+/* Floating Bottom Thumb Navigation Bar */
+.thumb-dock {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(94vw, 460px);
+    z-index: 999;
+    background: rgba(14, 20, 33, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 99px;
+    padding: 6px 12px 6px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.8);
 }
-.step strong { color: #172033; font-size: 13px; }
-.step span { display: block; color: #7b8798; font-size: 11px; margin-top: 4px; }
-.help-box {
-    margin: 34px 0 26px; padding: 26px 28px; border-radius: 21px;
-    background: linear-gradient(135deg,#fffaf0,#fffdf8);
-    border: 1px solid #f0dfaa; text-align: center;
+.dock-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: #F1F5F9;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
-.help-box h3 { color: #172033; margin: 0 0 7px; font-size: 20px; }
-.help-box p { color: #64748b; margin: 0; font-size: 13px; }
-.footer {
-    margin-top: 38px; padding: 23px 10px 5px;
-    border-top: 1px solid #e5e7eb; text-align: center;
+.dock-actions {
+    display: flex;
+    gap: 6px;
 }
-.footer-brand {
-    color: #172033; font-weight: 800; font-size: 14px; letter-spacing: .5px;
+.dock-btn-wa {
+    background: #25D366;
+    color: #062310;
+    padding: 8px 13px;
+    border-radius: 99px;
+    font-size: 11.5px;
+    font-weight: 800;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+    transition: transform 0.15s ease;
 }
-.footer-copy {
-    color: #94a3b8; font-size: 11px; margin-top: 6px; line-height: 1.5;
+.dock-btn-primary {
+    background: #F8D368;
+    color: #090D16;
+    padding: 8px 14px;
+    border-radius: 99px;
+    font-size: 11.5px;
+    font-weight: 800;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.15s ease;
 }
-@media (max-width: 760px) {
-    .block-container { padding: .55rem .75rem 1.5rem; }
-    .hero { border-radius: 20px; padding: 30px 19px 31px; margin-bottom: 20px; }
-    .hero h1 { font-size: 30px; }
-    .strategic-tagline { font-size: 11px; padding: 0 8px; }
-    .hero p { font-size: 14px; }
-    .brand-text { font-size: 15px; }
-    .brand-mark { width: 43px; height: 43px; font-size: 21px; }
-    .card { min-height: 0; padding: 22px 18px 17px; border-radius: 19px; }
-    .description { min-height: 0; margin-bottom: 14px; }
-    .steps { flex-direction: column; }
-    .step { padding: 13px; }
-    .help-box { padding: 22px 17px; border-radius: 18px; }
+.dock-btn-wa:active, .dock-btn-primary:active {
+    transform: scale(0.95);
+}
+
+.footer-credits {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin-top: 26px;
+    padding-bottom: 10px;
+}
+.footer-credits strong {
+    font-size: 12px;
+    color: #64748B;
+    letter-spacing: 0.5px;
+}
+.footer-credits p {
+    font-size: 10.5px;
+    color: #475569;
+    margin: 3px 0 0;
 }
 </style>
+
+<div class="orb-glow">
+    <div class="orb-1"></div>
+    <div class="orb-2"></div>
+</div>
 """,
     unsafe_allow_html=True,
 )
 
-if logo_uri:
-    st.markdown(
-        f"""
-        <section class="hero">
-            <img class="hero-logo" src="{logo_uri}" alt="CapitUp India Pvt. Ltd.">
-            <h1>Insurance, Made Simple.</h1>
-            <div class="strategic-tagline">
-                Your Strategic Partner in Finance, Insurance, and Compliance
-            </div>
-            <p>
-                Tell us what you need. Our team will help you explore
-                the right insurance solution for you, your family or your vehicle.
-            </p>
-            <div class="hero-pill">CapitUp India Pvt. Ltd.</div>
-        </section>
-        """,
-        unsafe_allow_html=True,
-    )
-else:
-    st.markdown(
-        """
-        <section class="hero">
-            <div class="brand">
-                <div class="brand-mark">↗</div>
-                <div class="brand-text">CAPITUP INDIA PVT. LTD.</div>
-            </div>
-            <h1>Insurance, Made Simple.</h1>
-            <div class="strategic-tagline">
-                Your Strategic Partner in Finance, Insurance, and Compliance
-            </div>
-            <p>
-                Tell us what you need. Our team will help you explore
-                the right insurance solution for you, your family or your vehicle.
-            </p>
-            <div class="hero-pill">CapitUp India Pvt. Ltd.</div>
-        </section>
-        """,
-        unsafe_allow_html=True,
-    )
-
+# ============================================================
+# APP BAR
+# ============================================================
 st.markdown(
     """
-    <div class="section-heading">
-        <div class="eyebrow">Choose your insurance</div>
-        <h2>What can we help you with?</h2>
-        <p>
-            Select an option below to tell our team what you are looking for.
-            The enquiry takes only a few minutes.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-cols = st.columns(3, gap="large")
-
-for col, key in zip(cols, ("health", "term", "motor")):
-    item = FORMS[key]
-    with col:
-        st.markdown(
-            f"""
-            <div class="card">
-                <div class="icon">{item["icon"]}</div>
-                <h3>{html.escape(item["title"])}</h3>
-                <div class="tagline">{html.escape(item["tagline"])}</div>
-                <div class="description">{html.escape(item["description"])}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        st.link_button(item["button"], item["url"], use_container_width=True)
-
-st.markdown(
-    """
-    <div class="section-heading" style="margin-top:48px;">
-        <div class="eyebrow">Simple process</div>
-        <h2>How it works</h2>
-    </div>
-    <div class="steps">
-        <div class="step"><div class="step-number">1</div><strong>Choose</strong><span>Select your insurance need</span></div>
-        <div class="step"><div class="step-number">2</div><strong>Share</strong><span>Tell us a few details</span></div>
-        <div class="step"><div class="step-number">3</div><strong>Connect</strong><span>Our team contacts you</span></div>
-        <div class="step"><div class="step-number">4</div><strong>Assist</strong><span>Get personalized guidance</span></div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-st.markdown(
-    """
-    <div class="help-box">
-        <h3>Not sure which insurance you need?</h3>
-        <p>
-            That's okay. Start with the option that best matches your requirement,
-            and our team can guide you from there.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-st.markdown(
-    """
-    <div class="footer">
-        <div class="footer-brand">CAPITUP INDIA PVT. LTD.</div>
-        <div class="footer-copy">
-            Corporate Insurance &nbsp;•&nbsp; Employee Benefits &nbsp;•&nbsp; Insurance Assistance
-            <br>
-            Your information is collected through the respective enquiry form
-            and used to respond to your request.
+    <div class="app-header">
+        <div class="brand-pill">
+            <span class="brand-symbol">🛡️</span>
+            <span class="brand-name">CAPITUP</span>
+        </div>
+        <div class="live-badge">
+            <span class="live-dot"></span>
+            Camp Live Today
         </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-if source:
-    st.session_state["lead_source"] = source
+# ============================================================
+# HERO GLASS PANEL
+# ============================================================
+logo_markup = (
+    f'<img class="hero-logo-img" src="{logo_uri}" alt="CapitUp">'
+    if logo_uri
+    else '<div style="font-size:26px; font-weight:900; color:#F8D368; letter-spacing:1px; margin-bottom:8px;">CAPITUP</div>'
+)
+
+st.markdown(
+    f"""
+    <div class="hero-glass">
+        {logo_markup}
+        <h1 class="hero-title">Insurance, Simplified & Fast.</h1>
+        <p class="hero-desc">
+            Compare hand-picked plans, unlock exclusive camp pricing, and get assistance from certified advisors.
+        </p>
+        <div class="activity-ticker">
+            <span>🔥</span> <strong>38 people</strong> checking rates right now
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ============================================================
+# INTERACTIVE CATEGORY CAROUSEL CHIPS
+# ============================================================
+st.markdown(
+    """
+    <div class="filter-tabs">
+        <div class="filter-tab active">🌟 All Plans</div>
+        <div class="filter-tab" onclick="document.getElementById('card-health').scrollIntoView({behavior:'smooth'})">🏥 Health</div>
+        <div class="filter-tab" onclick="document.getElementById('card-term').scrollIntoView({behavior:'smooth'})">🛡️ Life</div>
+        <div class="filter-tab" onclick="document.getElementById('card-motor').scrollIntoView({behavior:'smooth'})">⚡ Motor</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ============================================================
+# ACTION CARDS
+# ============================================================
+cards_html = ['<div class="cards-deck">']
+
+for key, item in FORMS.items():
+    badges_rendered = "".join([f'<span class="micro-badge">{b}</span>' for b in item["badges"]])
+    cards_html.append(
+        f"""
+        <a id="card-{item['category']}" class="super-card" href="{item['url']}" target="_blank" rel="noopener noreferrer">
+            <div class="card-header-flex">
+                <div class="icon-box-3d icon-{item['accent']}">
+                    {item['icon']}
+                </div>
+                <div class="card-title-group">
+                    <h2 class="card-headline">{html.escape(item['title'])}</h2>
+                    <div class="card-tagline">{html.escape(item['tagline'])}</div>
+                </div>
+            </div>
+            <div class="card-summary">{html.escape(item['description'])}</div>
+            <div class="card-badges-wrap">
+                {badges_rendered}
+            </div>
+            <div class="card-cta-row">
+                <span class="cta-label">{item['cta']}</span>
+                <div class="action-arrow">→</div>
+            </div>
+        </a>
+        """
+    )
+
+cards_html.append("</div>")
+st.markdown("".join(cards_html), unsafe_allow_html=True)
+
+# ============================================================
+# FAQ ACCORDION (SMOOTH MOBILE COMPONENT)
+# ============================================================
+st.markdown(
+    """
+    <div class="faq-box">
+        <div class="faq-heading-badge">Frequently Asked Questions</div>
+        <details>
+            <summary>How fast will I get policy assistance?</summary>
+            <div class="faq-drawer">
+                Your enquiry is routed instantly to our camp desk. A dedicated CapitUp insurance specialist will connect via WhatsApp or Call within 15–20 minutes.
+            </div>
+        </details>
+        <details>
+            <summary>Can I port my existing policy without losing benefits?</summary>
+            <div class="faq-drawer">
+                Yes! Your waiting period credits for pre-existing diseases are 100% safeguarded under IRDAI portability regulations.
+            </div>
+        </details>
+        <details>
+            <summary>Are there special corporate camp discounts?</summary>
+            <div class="faq-drawer">
+                Yes, attending through this portal grants you access to preferred corporate group rates, waived medical fees on select covers, and free claim liaison.
+            </div>
+        </details>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ============================================================
+# THUMB-ZONE FLOATING QUICK DOCK & FOOTER
+# ============================================================
+st.markdown(
+    f"""
+    <!-- Mobile Floating Dock -->
+    <div class="thumb-dock">
+        <div class="dock-text">
+            <span>💬</span> Need help?
+        </div>
+        <div class="dock-actions">
+            <a class="dock-btn-wa" href="{WHATSAPP_URL}" target="_blank" rel="noopener noreferrer">
+                WhatsApp ⚡
+            </a>
+            <a class="dock-btn-primary" href="{FORMS['health']['url']}" target="_blank" rel="noopener noreferrer">
+                Apply ↗
+            </a>
+        </div>
+    </div>
+
+    <!-- Minimal Brand Footer -->
+    <div class="footer-credits">
+        <strong>CAPITUP INDIA PRIVATE LIMITED</strong>
+        <p>Direct Brokerage • Risk Underwriting • Fast Claims</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Retain lead source in session state
+if source_param:
+    st.session_state["lead_source"] = source_param
